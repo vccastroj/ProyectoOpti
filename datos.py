@@ -6,10 +6,10 @@ def cargar_parametros():
 
 
     # Conjuntos
-    P = np.arange(1, 42001)
-    Z = np.arange(1, 32*7)
-    Q = np.arange(1,32)
-    T = np.arange(1,T_max)
+    P = np.arange(0, 100)
+    Z = np.arange(0, 10*4)
+    Q = np.arange(0,10)
+    T = np.arange(1,T_max+1)
 
     # Parametros
 
@@ -24,7 +24,7 @@ def cargar_parametros():
     num_zonas_seguras = 7
     γ_zq = np.zeros((len(Z), len(Q))) # Zona z en cuadrante q
 
-    for q in range(len(Q)):
+    for q in range(len(Q)): # Asignar zonas seguras
         zonas_seguras = np.random.choice(len(Z), num_zonas_seguras, replace=False)
         for z in zonas_seguras:
             γ[z] = q
@@ -33,7 +33,9 @@ def cargar_parametros():
     # Asignar las zonas restantes de manera aleatoria
     zonas_restantes = [z for z in range(len(Z)) if γ[z] == 0]
     for z in zonas_restantes:
-        q = np.random.randint(0, len(Q))
+        q = np.random.randint(1, len(Q))  # Verifica que q esté dentro del rango de Q
+        if q >= len(Q):
+            print(f"Índice q fuera de rango: {q}")
         γ[z] = q
         γ_zq[z][q] = 1
 
@@ -45,17 +47,20 @@ def cargar_parametros():
 
     f_qj = np.genfromtxt('datos.csv', delimiter=',', dtype=float) # Tiempo de viaje entre cuadrantes q y j
 
-    M = 1e6         # Constante grande
 
-    K = len(P) #personas minimas a evacuar
-
+    K = len(P)*0.8 #personas minimas a evacuar
 
 
-    ### PARAMETROS A REVISAR ###
+    h_z = np.zeros(len(Z), dtype=int)
+    num_zonas_verticales = int(0.9 * num_zonas_seguras) # 90% de las zonas seguras tendrán vías de evacuación verticales
+    zonas_verticales = np.random.choice(num_zonas_seguras, num_zonas_verticales, replace=False)
+    for z in zonas_verticales:
+        h_z[z] = 1
 
-    h_z = 1 # Si zona z es vertical
+    Φ_q = np.zeros(len(Q), dtype=int)
+    Φ_q[:8] = 1 ## Cuadrantes costeros
+    print("Datos cargados")
+    
+    return P, Z, Q, T, B, B_pq, γ, γ_zq, d_zp, v_p, C_z, f_qj, Φ_q, K, h_z, T_max
 
-    ## Esto se debe cumplir para cuadrantes afectados no al alazar
-    Φ_q = np.random.randint(1, len(Q)) # 1 si cuadrante q fue afectado
-    return P, Z, Q, T, B, B_pq, γ, γ_zq, d_zp, v_p, C_z, f_qj, M, Φ_q, K, h_z, T_max
-
+cargar_parametros()
